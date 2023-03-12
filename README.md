@@ -1,13 +1,19 @@
-transaction_type = BUY, SELL
-validity = ??
+# Class Description
+- createorders.py -> Calls the functions for exchange.py to create orders and add them to kafka 
 
+- consumer.py -> Kafka consumer that accumulates all orders
 
-def get_intruments() -> 
+- exchange.py -> Exchange class that has order create method that acts as kafka producer
 
-def place_order(instrument, transaction_type, quantity, validity) -> Print Order Details
+- model.py -> Consists of model classes
 
-def match_maker(order) -> check order with this instrument -> if matched output both orders matched/ check validity
+## Completed
+- transaction_type = BUY, SELL - Class created
+- validity = DAY - Class created
+- get_intruments() - Done
+- place_order(instrument, transaction_type, quantity, validity) -> Print Order Details - Done
 
-def simple_moving_average
-
-def calculate_profits
+## Pending
+- match_maker(order) -> check order with this instrument -> if matched output both orders matched/ check validity
+- simple_moving_average
+- calculate_profits
