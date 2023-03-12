@@ -1,9 +1,9 @@
 # Class Description
-- createorders.py -> Calls the functions for exchange.py to create orders and add them to kafka 
+- placeorders.py -> Calls the functions for exchange.py to create orders and add them to kafka 
 
-- consumer.py -> Kafka consumer that accumulates all orders
+- consumer.py -> Kafka consumer that accumulates all orders and triggers match making
 
-- exchange.py -> Exchange class that has order create method that acts as kafka producer
+- exchange.py -> Exchange class that has order create, match maker functions
 
 - model.py -> Consists of model classes
 
