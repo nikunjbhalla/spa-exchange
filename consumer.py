@@ -19,7 +19,7 @@ sell_orders = []
 
 for message in consumer:
     message = message.value
-    print('Message :: {}'.format(message))
+    print('{}\n'.format(message))
 
     order = Order(order_id=message['order_id'], order_type=message['order_type'], trader_id=message['trader_id'], 
             instrument=message['instrument'], price=message['price'], quantity=message['quantity'], 
