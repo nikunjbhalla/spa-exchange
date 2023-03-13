@@ -36,82 +36,18 @@ class Exchange:
     def match_maker(self, order, buy_orders, sell_orders):
 
         if order.order_type == TransactionType.BUY:
-
-            current_instruments_orders = self.get_current_instruments_orders(order, buy_orders, sell_orders)
-
-            trade_settled = False
-            # check against all SELL orders of this orders instrument
-            for sell_order in current_instruments_orders:
-                # Checking conditions :: 
-                # expected sell price is less than the current orders price
-                # BUY and SELL orders are of different trader
-                if (order.price >= sell_order.price) and (order.trader_id != sell_order.trader_id):
-                    quantity_traded = min(order.quantity, sell_order.quantity)
-                    if (quantity_traded == order.quantity) and (quantity_traded == sell_order.quantity):
-                        # dont add order
-                        # remove sell order
-                        sell_orders.remove(sell_order)
-                    else:
-                        if quantity_traded < order.quantity:
-                            # add this order with reduced quantity
-                            order.quantity = order.quantity - quantity_traded
-                            buy_orders.append(order)
-                        if quantity_traded < sell_order.quantity:
-                            # dont add order
-                            # remove that much from sale order
-                            sell_order.quantity = sell_order.quantity - quantity_traded
-
-                    trade = {
-                        'BUY_ORDER' : order,
-                        'SELL_ORDER' : sell_order,
-                        'PRICE' : sell_order.price,
-                        'QUANTITY' : quantity_traded,
-                        'INSTRUMENT' : order.instrument['instrument_name']
-                    }
-                    print('Trade Settled :: \n{}'.format(trade))
-                    trade_settled = True
-                    break
+            # call function here
+            trade_settled = self.algorithm(order, buy_orders, sell_orders)
 
             # when current order is not settled,  its added in buy orders list
             if not trade_settled:
                 buy_orders.append(order)
 
         elif order.order_type == TransactionType.SELL:
+            # call function here
+            trade_settled = self.algorithm(order, buy_orders, sell_orders)
 
-            current_instruments_orders = self.get_current_instruments_orders(order, buy_orders, sell_orders)
-
-            trade_settled = False
-            # check against all BUY orders of this orders instrument
-            for buy_order in current_instruments_orders:
-                if (buy_order.price <= order.price) and (buy_order.trader_id != order.trader_id):
-
-                    quantity_traded = min(order.quantity, buy_order.quantity)
-                    if (quantity_traded == order.quantity) and (quantity_traded == buy_order.quantity):
-                        # dont add order
-                        # remove sell order
-                        buy_orders.remove(buy_order)
-                    else:
-                        if quantity_traded < order.quantity:
-                            # add this order with reduced quantity
-                            order.quantity = order.quantity - quantity_traded
-                            sell_orders.append(order)
-                        if quantity_traded < buy_order.quantity:
-                            # dont add order
-                            # remove that much from buy order
-                            buy_order.quantity = buy_order.quantity - quantity_traded
-
-                    trade = {
-                        'BUY_ORDER' : buy_order,
-                        'SELL_ORDER' : order,
-                        'PRICE' : order.price,
-                        'QUANTITY' : quantity_traded,
-                        'INSTRUMENT' : order.instrument['instrument_name']
-                    }
-                    # buy_orders.remove(buy_order)
-                    print('Trade Settled :: \n{}'.format(trade))
-                    trade_settled = True
-                    break
-
+            # when current order is not settled,  its added in sell orders list
             if not trade_settled:
                 sell_orders.append(order)
 
@@ -131,3 +67,57 @@ class Exchange:
                     current_instruments_orders.append(s_order)
         print('Total opposite orders for this instrument : {}'.format(len(current_instruments_orders)))
         return current_instruments_orders 
+
+    def algorithm(self, order, buy_orders, sell_orders):
+        current_instruments_orders = self.get_current_instruments_orders(order, buy_orders, sell_orders)
+
+        if order.order_type == TransactionType.BUY:
+            current_type_orders = buy_orders
+            opposite_orders = sell_orders
+        elif order.order_type == TransactionType.SELL:
+            current_type_orders = sell_orders
+            opposite_orders = buy_orders
+
+        trade_settled = False
+        # check against all SELL orders of this orders instrument
+        for existing_order in current_instruments_orders:
+            # Checking conditions :: 
+            # expected sell price is less than the current orders price
+            # BUY and SELL orders are of different trader
+            if (order.price >= existing_order.price) and (order.trader_id != existing_order.trader_id):
+                quantity_traded = min(order.quantity, existing_order.quantity)
+                if (quantity_traded == order.quantity) and (quantity_traded == existing_order.quantity):
+                    # dont add order
+                    # remove opposite order
+                    opposite_orders.remove(existing_order)
+                else:
+                    if quantity_traded < order.quantity:
+                        # add this order with reduced quantity
+                        order.quantity = order.quantity - quantity_traded
+                        current_type_orders.append(order)
+
+                    if quantity_traded < existing_order.quantity:
+                        # dont add order
+                        # remove that much from order
+                        existing_order.quantity = existing_order.quantity - quantity_traded
+                trade_settled = True
+
+                if order.order_type == TransactionType.BUY:
+                    trade = {
+                        'BUY_ORDER' : order.order_id,
+                        'SELL_ORDER' : existing_order.order_id,
+                        'PRICE' : existing_order.price,
+                        'SETTLED QUANTITY' : quantity_traded,
+                        'INSTRUMENT' : order.instrument['instrument_name']
+                        }
+                elif order.order_type == TransactionType.SELL:
+                    trade = {
+                        'BUY_ORDER' : existing_order.order_id,
+                        'SELL_ORDER' : order.order_id,
+                        'PRICE' : order.price,
+                        'SETTLED QUANTITY' : quantity_traded,
+                        'INSTRUMENT' : order.instrument['instrument_name']
+                    }
+                print('Trade Settled :: \n{}'.format(trade))
+                break
+        return trade_settled
