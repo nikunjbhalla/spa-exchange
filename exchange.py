@@ -37,21 +37,21 @@ class Exchange:
 
         if order.order_type == TransactionType.BUY:
             # call function here
-            trade_settled = self.algorithm(order, buy_orders, sell_orders)
+            trade = self.algorithm(order, buy_orders, sell_orders)
 
             # when current order is not settled,  its added in buy orders list
-            if not trade_settled:
+            if not trade:
                 buy_orders.append(order)
 
         elif order.order_type == TransactionType.SELL:
             # call function here
-            trade_settled = self.algorithm(order, buy_orders, sell_orders)
+            trade = self.algorithm(order, buy_orders, sell_orders)
 
             # when current order is not settled,  its added in sell orders list
-            if not trade_settled:
+            if not trade:
                 sell_orders.append(order)
 
-        return buy_orders, sell_orders
+        return trade, buy_orders, sell_orders
         
     def get_current_instruments_orders(self, order, buy_orders, sell_orders):
         current_instruments_orders = []
@@ -78,7 +78,7 @@ class Exchange:
             current_type_orders = sell_orders
             opposite_orders = buy_orders
 
-        trade_settled = False
+        trade = None
         # check against all SELL orders of this orders instrument
         for existing_order in current_instruments_orders:
             # Checking conditions :: 
@@ -100,24 +100,25 @@ class Exchange:
                         # dont add order
                         # remove that much from order
                         existing_order.quantity = existing_order.quantity - quantity_traded
-                trade_settled = True
 
                 if order.order_type == TransactionType.BUY:
                     trade = {
-                        'BUY_ORDER' : order.order_id,
-                        'SELL_ORDER' : existing_order.order_id,
-                        'PRICE' : existing_order.price,
-                        'SETTLED QUANTITY' : quantity_traded,
-                        'INSTRUMENT' : order.instrument['instrument_name']
+                        'buy_order' : order.order_id,
+                        'sell_order' : existing_order.order_id,
+                        'price' : existing_order.price,
+                        'quantity' : quantity_traded,
+                        'instrument' : order.instrument['instrument_name'],
+                        'timestamp' : str(datetime.datetime.now())
                         }
                 elif order.order_type == TransactionType.SELL:
                     trade = {
-                        'BUY_ORDER' : existing_order.order_id,
-                        'SELL_ORDER' : order.order_id,
-                        'PRICE' : order.price,
-                        'SETTLED QUANTITY' : quantity_traded,
-                        'INSTRUMENT' : order.instrument['instrument_name']
+                        'buy_order' : existing_order.order_id,
+                        'sell_order' : order.order_id,
+                        'price' : order.price,
+                        'quantity' : quantity_traded,
+                        'instrument' : order.instrument['instrument_name'],
+                        'timestamp' : str(datetime.datetime.now())
                     }
                 print('Trade Settled :: \n{}'.format(trade))
                 break
-        return trade_settled
+        return trade
